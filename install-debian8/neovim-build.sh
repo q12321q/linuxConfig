@@ -19,3 +19,11 @@ git clone https://github.com/neovim/neovim
 cd neovim
 make
 sudo make install
+sudo pip install neovim
+sudo pip3 install neovim
+sudo update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
+sudo update-alternatives --config vi
+sudo update-alternatives --install /usr/bin/vim vim /usr/bin/nvim 60
+sudo update-alternatives --config vim
+sudo update-alternatives --install /usr/bin/editor editor /usr/bin/nvim 60
+sudo update-alternatives --config editor
