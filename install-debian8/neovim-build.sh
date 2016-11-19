@@ -4,11 +4,18 @@ sudo apt-get install libtool \
                      libtool-bin \
                      autoconf \
                      automake \
+                     make \
                      cmake \
                      g++ \
                      pkg-config \
                      unzip \
-                     xsel
+                     xsel \
+		     python \
+		     python-pip \
+		     python-dev \
+		     python3 \
+		     python3-pip \
+		     python3-dev
 
 if [ -d "$HOME/dev" ] ; then
   mkdir ~/dev
