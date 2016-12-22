@@ -12,6 +12,7 @@ ZSH_THEME="kafeitu"
 ZSH_THEME="random"
 ZSH_THEME="avit"
 ZSH_THEME="ys"
+ZSH_THEME="q12321q"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -89,8 +90,8 @@ bindkey '^j' vi-cmd-mode
 #     zle reset-prompt
 # }
 #
-zle -N zle-line-init
-zle -N zle-keymap-select
+# zle -N zle-line-init
+# zle -N zle-keymap-select
 export KEYTIMEOUT=1
 
 # Compilation flags
@@ -113,3 +114,38 @@ export MANPAGER="nvim -c 'set ft=man' -"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fasd --init posix-alias zsh-hook)"
 source ~/dev/neolaneIDE/data/scripts/bashenv.sh
+
+
+# fs [FUZZY PATTERN] - Select selected tmux session
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+tls() {
+  local session
+  session=$(tmux list-sessions -F "#{session_name}" | \
+    fzf --query="$1" --select-1 --exit-0) &&
+  tmux switch-client -t "$session"
+}
+
+
+# Tmux alias
+
+tn() {
+  tmux new-session -s "$1"
+}
+
+# Git alias
+alias gs='git status'
+alias gl='git l'
+
+duf() {
+  # du --max-depth=1 $* 2> /dev/null | sort -n -r | head -n20
+  du --max-depth=1 $* 2> /dev/null
+}
+
+# FASD
+unalias z
+z() {
+  local dir
+  [ $# -gt 0 ] && dir="$(fasd -dl1 "$*")" && cd "${dir}"
+  [ $# -eq 0 ] && dir="$(fasd -Rdl "$1" | fzf -1 -0 --no-sort +m)" && cd "${dir}"
+}
