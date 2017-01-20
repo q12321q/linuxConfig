@@ -1,0 +1,11 @@
+package fasd
+package fzf
+theme cbjohnson
+theme clearance
+theme cmorrell
+theme dangerous
+theme default
+theme eden
+theme nelsonjchen
+theme pure
+theme syl20bnr
