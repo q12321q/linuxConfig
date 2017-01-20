@@ -1,7 +1,7 @@
 set charset UTF-8
 set target-wide-char UTF-16
-# set print pretty on
-# set print object on
+set print pretty on
+set print object on
 # set print elements 0
 # set unwindonsignal on
 # set print repeats 1000
@@ -21,7 +21,6 @@ sys.path.insert(0, '/home/arene/dev/neolanegdbprettyprint')
 from neolane.printers import register_printer_gen
 from neolane.commands import DumpBreakpoints
 
-# register_printer_gen(None)
 DumpBreakpoints()
 
 class PrintX(gdb.Command):
@@ -39,11 +38,9 @@ end
 define nlweb
     handle SIGSEGV noprint nostop pass
 end
-# handle SIGPIPE nostop noprint pass
 define nonlweb
     handle SIGSEGV print stop nopass
 end
-#handle SIGPIPE stop print nopass
 define list
     set variable $iter_loop = 0
     set variable $last_print = 0
