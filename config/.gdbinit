@@ -2,9 +2,9 @@ set charset UTF-8
 set target-wide-char UTF-16
 set print pretty on
 set print object on
-# set print elements 0
+set print elements 0
+set print repeats 1000
 # set unwindonsignal on
-# set print repeats 1000
 
 python
 import sys
@@ -29,8 +29,8 @@ class PrintX(gdb.Command):
 
     def invoke(self, args, from_tty):
         for i in gdb.string_to_argv(args):
-            v = gdb.parse_and_eval(i)
-            gdb.write('Value:\n%s\n' % str(v).replace("\\n", "\n").replace('\\"','"'))
+            v = gdb.parse_and_eval(i).__str__().encode('utf-8', 'namereplace')
+            gdb.write('Value:\n%s\n' % v.replace("\\n", "\n").replace('\\"','"'))
 
 PrintX()
 end
