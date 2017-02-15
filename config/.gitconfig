@@ -1,0 +1,20 @@
+[push]
+  default = simple
+# [user]
+#   email = q12321q@gmail.com
+#   name = q12321q
+[user]
+  name = Stephane Arene
+  email = arene@adobe.com
+[alias]
+  l  = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  la = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --all
+  ls = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --stat -n 10
+  lf = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --first-parent
+  s = status
+  rank = shortlog -sn --no-merges
+  ffpull = pull --ff-only
+  drypush = push --dry-run --porcelain
+[core]
+  pager = less -FX
+  excludesfile = /home/arene/.gitignore_global

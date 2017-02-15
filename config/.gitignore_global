@@ -1,0 +1,12 @@
+tags
+.ctags
+.tern-project
+.eslintrc.js
+.ycm_extra_conf.py
+nl/build
+nl/test/autotest/hs_err_pid*.log
+nl/test/autotest/logs
+wpp/xtk/datakit/jssp/jsshell-cmd.jssp
+wpp/xtk/datakit/jssp/jsshell.jssp
+wpp/xtk/datakit/jssp/shell-cmd.jssp
+wpp/xtk/datakit/jssp/shell.jssp
