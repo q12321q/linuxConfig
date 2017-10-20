@@ -4,7 +4,7 @@
 ###############################################################################
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
 # Path to your oh-my-zsh installation.
-export ZSH=/home/arene/.config/oh-my-zsh
+export ZSH=$HOME/.config/oh-my-zsh
 
 ###############################################################################
 # ZSH
@@ -44,7 +44,7 @@ export RPS1="%{$reset_color%}"
 ###############################################################################
 # env
 ###############################################################################
-export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+# export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
@@ -64,20 +64,20 @@ export KEYTIMEOUT=1
 ###############################################################################
 # Aliases
 ###############################################################################
+alias vi=nvim
+
 # Tmux alias
-tls() {
+tm() {
   local session
+  newsession=${1:-main}
   session=$(tmux list-sessions -F "#{session_name}" | \
     fzf --query="$1" --select-1 --exit-0) &&
-  tmux switch-client -t "$session"
-}
-
-tn() {
-  tmux new-session -s "$1"
+    tmux attach-session -t "$session" || tmux new-session -s $newsession
 }
 
 # Git alias
 alias gs='git status'
+alias gc='git checkout'
 # alias gl='git l'
 gl() {
   branch=$(git rev-parse --abbrev-ref HEAD)
@@ -114,6 +114,23 @@ nltags() {
 nllog() {
   tail -f /var/log/syslog-ng/nlserver/`date +"%Y-%m-%d"`.log
 }
+pw() {
+  if [[ $(lpass status) = 'Not logged in.' ]]; then
+    lpass login $LPASS_USERNAME || exit 1
+  fi
+  param='--password'
+  if [[ $1 != '' ]]; then
+    param=$1
+  fi
+  lpass show -c --color=never $param $(lpass ls | fzf | awk '{print $(NF)}' | sed 's/\]//g')
+}
+
+pwshow() {
+  if [[ $(lpass status) = 'Not logged in.' ]]; then
+    lpass login $LPASS_USERNAME || exit 1
+  fi
+  lpass show $1 $(lpass ls | fzf | awk '{print $(NF)}' | sed 's/\]//g')
+}
 
 ###############################################################################
 # bindkey
@@ -135,9 +152,11 @@ bindkey '^l' forward-char
 # external
 ###############################################################################
 
+[ -f ~/.zshrc_local ] && source ~/.zshrc_local
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fasd --init posix-alias zsh-hook)"
-source ~/dev/neolaneIDE/data/scripts/bashenv.sh
+[ -f ~/dev/neolaneIDE/data/scripts/bashenv.sh ] && source ~/dev/neolaneIDE/data/scripts/bashenv.sh
+[ -f ~/.cargo/env ] && source ~/.cargo/env
 
 ###############################################################################
 # ZSH_HIGHLIGHT
