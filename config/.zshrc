@@ -58,6 +58,7 @@ export MANPAGER="nvim -c 'set ft=man' -"
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 # To apply the command to CTRL-T as well
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+[ -n "$NVIM_LISTEN_ADDRESS" ] && export FZF_DEFAULT_OPTS='--no-height'
 
 export KEYTIMEOUT=1
 
@@ -75,6 +76,7 @@ tm() {
     tmux attach-session -t "$session" || tmux new-session -s $newsession
 }
 
+[ -n "$NVIM_LISTEN_ADDRESS" ] && alias nv='nvr -o'
 # Git alias
 alias gs='git status'
 alias gc='git checkout'
@@ -101,7 +103,50 @@ glf() {
 duf() {
   du --max-depth=1 $* 2> /dev/null
 }
+# fbr - checkout git branch (including remote branches)
+fgc() {
+  local branches branch
+  branches=$(git branch --all | grep -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
 
+fcs() {
+  local commits commit
+  commits=$(git log --color=always --pretty=oneline --abbrev-commit --reverse) &&
+  commit=$(echo "$commits" | fzf --tac +s +m -e --ansi --reverse) &&
+  echo -n $(echo "$commit" | sed "s/ .*//")
+}
+
+# fstash - easier way to deal with stashes
+# type fstash to get a list of your stashes
+# enter shows you the contents of the stash
+# ctrl-d shows a diff of the stash against your current HEAD
+# ctrl-b checks the stash out as a branch, for easier merging
+fstash() {
+  local out q k sha
+  while out=$(
+    git stash list --pretty="%C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs" |
+    fzf --ansi --no-sort --query="$q" --print-query \
+        --expect=ctrl-d,ctrl-b);
+  do
+    mapfile -t out <<< "$out"
+    q="${out[0]}"
+    k="${out[1]}"
+    sha="${out[-1]}"
+    sha="${sha%% *}"
+    [[ -z "$sha" ]] && continue
+    if [[ "$k" == 'ctrl-d' ]]; then
+      git diff $sha
+    elif [[ "$k" == 'ctrl-b' ]]; then
+      git stash branch "stash-$sha" $sha
+      break;
+    else
+      git stash show -p $sha
+    fi
+  done
+}
 
 # Neolane
 alias nlmon='vi -c Nlmonitor'
@@ -175,11 +220,6 @@ ZSH_HIGHLIGHT_STYLES[function]='fg=yellow,bold'
 # ZSH_HIGHLIGHT_STYLES[path]='fg=green,bold'
 ZSH_HIGHLIGHT_STYLES[path]='fg=magenta'
 
-SPACESHIP_PROMPT_TRUNC=0
-SPACESHIP_PROMPT_SYMBOL='»'
-SPACESHIP_VI_MODE_INSERT=" "
-SPACESHIP_VI_MODE_NORMAL="N"
-
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:options' description 'yes'
@@ -192,3 +232,32 @@ zstyle ':completion:*:default' list-prompt '%S%M matches%s'
 zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
 zstyle ':completion:*' group-name ''
 # zstyle ':completion:*' verbose yes
+#
+
+###############################################################################
+# Spaceship
+###############################################################################
+SPACESHIP_PROMPT_TRUNC=0
+SPACESHIP_PROMPT_SYMBOL='»'
+
+SPACESHIP_VI_MODE_INSERT=" "
+SPACESHIP_VI_MODE_NORMAL="N"
+SPACESHIP_VI_MODE_COLOR=cyan
+
+SPACESHIP_DOCKER_SHOW=false
+
+# GIT
+# Disable git symbol
+SPACESHIP_GIT_SYMBOL="" # disable git prefix
+SPACESHIP_GIT_BRANCH_PREFIX="" # disable branch prefix too
+# Wrap git in `git:(...)`
+SPACESHIP_GIT_PREFIX='git:('
+SPACESHIP_GIT_SUFFIX=") "
+SPACESHIP_GIT_BRANCH_SUFFIX="" # remove space after branch name
+# Unwrap git status from `[...]`
+SPACESHIP_GIT_STATUS_PREFIX=""
+SPACESHIP_GIT_STATUS_SUFFIX=""
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

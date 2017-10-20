@@ -2,9 +2,12 @@ set charset UTF-8
 set target-wide-char UTF-16
 set print pretty on
 set print object on
-set print elements 0
+set print elements 20000
 set print repeats 1000
 # set unwindonsignal on
+set follow-fork-mode child
+set history save on
+set history filename ~/.gdbhistory
 
 python
 import sys
