@@ -1,58 +1,55 @@
 # setopt XTRACE VERBOSE
+# zmodload zsh/zprof
+
+###############################################################################
+# env PATH
+###############################################################################
+export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+export MNT_DIR="$HOME/mnt"
+
+###############################################################################
+# Zgen
+###############################################################################
+# load zgen
+source "${HOME}/.zgen/zgen.zsh"
+
+if ! zgen saved; then
+  zgen oh-my-zsh
+  zgen oh-my-zsh plugins/vi-mode
+  zgen oh-my-zsh plugins/fasd
+
+  zgen load lukechilds/zsh-nvm
+  zgen load lukechilds/zsh-better-npm-completion
+  zgen load zsh-users/zsh-completions
+  zgen load zsh-users/zsh-autosuggestions
+  zgen load zsh-users/zsh-history-substring-search
+  zgen load zsh-users/zsh-syntax-highlighting
+
+  zgen load denysdovhan/spaceship-zsh-theme spaceship
+
+  zgen save
+fi
+
+###############################################################################
+# external
+###############################################################################
+
+[ -f ~/.zshrc_local ] && source ~/.zshrc_local
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+eval "$(fasd --init posix-alias zsh-hook)"
+[ -f ~/dev/neolaneIDE/data/scripts/bashenv.sh ] && source ~/dev/neolaneIDE/data/scripts/bashenv.sh
+[ -f ~/.cargo/env ] && source ~/.cargo/env
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
 ###############################################################################
 # env
 ###############################################################################
-export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
-# Path to your oh-my-zsh installation.
-export ZSH=$HOME/.config/oh-my-zsh
-
-###############################################################################
-# ZSH
-###############################################################################
-
-ZSH_THEME="steeef"
-# ZSH_THEME="kennethreitz"
-# ZSH_THEME="af-magic"
-ZSH_THEME="kafeitu"
-ZSH_THEME="random"
-ZSH_THEME="avit"
-ZSH_THEME="ys"
-ZSH_THEME="q12321q"
-ZSH_THEME="geometry/geometry"
-ZSH_THEME="spaceship"
-
-plugins=(
-  # git \
-  man \
-  taskwarrior \
-  python \
-  vi-mode \
-  fasd \
-  zsh-autosuggestions \
-  zsh-syntax-highlighting \
-  history-substring-search \
-  )
-source $ZSH/oh-my-zsh.sh
-
-# vi-mode: disable default <<< NORMAL mode indicator in right prompt
-export RPS1="%{$reset_color%}"
-
-
-# fpath=($ZSH/custom/plugins/neolane-ide $fpath)
-# fpath=(/home/arene/dev/neolaneIDE/data/scripts $fpath)
-
-###############################################################################
-# env
-###############################################################################
-# export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-export EDITOR=/usr/bin/vim
+export EDITOR=$(which vi)
 export MANPAGER="nvim -c 'set ft=man' -"
+# Add colors to ls
+export CLICOLOR=''
 
 # FZF
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
@@ -65,9 +62,33 @@ export KEYTIMEOUT=1
 ###############################################################################
 # Aliases
 ###############################################################################
-alias vi=nvim
+alias la="ls -A"
+alias ll="ls -l"
 
-# Tmux alias
+# Vim aliases
+alias vi=nvim
+[ -n "$NVIM_LISTEN_ADDRESS" ] && alias nv='nvr -o'
+
+# mount aliases
+smb() {
+  local smb_path
+  local jmb_name
+  if [[ -z "$*" ]]; then
+    echo "usage: smb //<user>@<host>/<path> name"
+    return 1
+  elif [[ -z "$MNT_DIR" ]]; then
+    echo "MNT_DIR must be set!"
+    return 1
+  else
+    smb_path="$1"
+    smb_name="$2"
+
+    mkdir -p "$MNT_DIR/$smb_path"
+    mount -t smbfs "$smb_path" "$MNT_DIR/$smb_name"
+  fi
+}
+
+# Tmux aliases
 tm() {
   local session
   newsession=${1:-main}
@@ -76,8 +97,7 @@ tm() {
     tmux attach-session -t "$session" || tmux new-session -s $newsession
 }
 
-[ -n "$NVIM_LISTEN_ADDRESS" ] && alias nv='nvr -o'
-# Git alias
+# Git aliases
 alias gs='git status'
 alias gc='git checkout'
 # alias gl='git l'
@@ -177,6 +197,18 @@ pwshow() {
   lpass show $1 $(lpass ls | fzf | awk '{print $(NF)}' | sed 's/\]//g')
 }
 
+# Fasd aliases
+unalias z
+z() {
+  if [[ $1 = '-' ]]; then
+    cd "$(fasd_cd -d -l -t -R 2>&1 | sed -n 's/^[ 0-9.,]*//p' | fzf --no-sort)"
+  elif [[ -z "$*" ]]; then
+    cd "$(fasd_cd -d -l -R 2>&1 | sed -n 's/^[ 0-9.,]*//p' | fzf --no-sort)"
+  else
+    fasd_cd -d "$@"
+  fi
+}
+
 ###############################################################################
 # bindkey
 ###############################################################################
@@ -193,16 +225,8 @@ bindkey '^w' backward-kill-word
 bindkey '^f' vi-cmd-mode
 bindkey '^l' forward-char
 
-###############################################################################
-# external
-###############################################################################
-
-[ -f ~/.zshrc_local ] && source ~/.zshrc_local
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-eval "$(fasd --init posix-alias zsh-hook)"
-[ -f ~/dev/neolaneIDE/data/scripts/bashenv.sh ] && source ~/dev/neolaneIDE/data/scripts/bashenv.sh
-[ -f ~/.cargo/env ] && source ~/.cargo/env
-
+# vi-mode: disable default <<< NORMAL mode indicator in right prompt
+export RPS1="%{$reset_color%}"
 ###############################################################################
 # ZSH_HIGHLIGHT
 ###############################################################################
@@ -233,6 +257,8 @@ zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
 zstyle ':completion:*' group-name ''
 # zstyle ':completion:*' verbose yes
 #
+#
+zstyle ':bracketed-paste-magic' active-widgets '.self-*'
 
 ###############################################################################
 # Spaceship
@@ -245,6 +271,7 @@ SPACESHIP_VI_MODE_NORMAL="N"
 SPACESHIP_VI_MODE_COLOR=cyan
 
 SPACESHIP_DOCKER_SHOW=false
+SPACESHIP_BATTERY_SHOW=false
 
 # GIT
 # Disable git symbol
@@ -257,7 +284,4 @@ SPACESHIP_GIT_BRANCH_SUFFIX="" # remove space after branch name
 # Unwrap git status from `[...]`
 SPACESHIP_GIT_STATUS_PREFIX=""
 SPACESHIP_GIT_STATUS_SUFFIX=""
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# zprof
