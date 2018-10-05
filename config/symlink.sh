@@ -24,3 +24,5 @@ then
   mkdir -p ~/.config
 fi
 ln -s -f $GIT_CONFIG/.config/omf ~/.config/omf
+
+ln -s -f $GIT_CONFIG/.psqlrc ~/.psqlrc

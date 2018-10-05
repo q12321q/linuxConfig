@@ -18,3 +18,5 @@
 [core]
   pager = less -FX
   excludesfile = /home/arene/.gitignore_global
+[submodule]
+	recurse = true
